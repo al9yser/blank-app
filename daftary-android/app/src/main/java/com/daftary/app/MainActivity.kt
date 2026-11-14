@@ -23,6 +23,10 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Assessment
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -90,10 +94,12 @@ fun DaftaryApp(db: DaftaryDb) {
             Scaffold(
                 containerColor = Canvas,
                 bottomBar = {
-                    NavigationBar(containerColor = Color.White, tonalElevation = 0.dp) {
-                        NavigationBarItem(selected = tab == 0, onClick = { tab = 0 }, icon = { Icon(Icons.Default.Home, null) }, label = { Text("الرئيسية") })
-                        NavigationBarItem(selected = tab == 1, onClick = { tab = 1 }, icon = { Icon(Icons.Default.ReceiptLong, null) }, label = { Text("العقود") })
-                        NavigationBarItem(selected = tab == 2, onClick = { tab = 2 }, icon = { Icon(Icons.Default.AttachMoney, null) }, label = { Text("التحصيل") })
+                    NavigationBar(containerColor = Color.White.copy(alpha = .96f), tonalElevation = 8.dp) {
+                        NavigationBarItem(selected = tab == 0, onClick = { tab = 0 }, icon = { Icon(Icons.Default.Home, null) }, label = { Text("الرئيسية", fontSize = 10.sp) })
+                        NavigationBarItem(selected = tab == 1, onClick = { tab = 1 }, icon = { Icon(Icons.Default.ReceiptLong, null) }, label = { Text("المبيعات", fontSize = 10.sp) })
+                        NavigationBarItem(selected = tab == 2, onClick = { tab = 2 }, icon = { Icon(Icons.Default.CalendarMonth, null) }, label = { Text("الأقساط", fontSize = 10.sp) })
+                        NavigationBarItem(selected = tab == 3, onClick = { tab = 3 }, icon = { Icon(Icons.Default.People, null) }, label = { Text("العملاء", fontSize = 10.sp) })
+                        NavigationBarItem(selected = tab == 4, onClick = { tab = 4 }, icon = { Icon(Icons.Default.Assessment, null) }, label = { Text("التقارير", fontSize = 10.sp) })
                     }
                 },
                 floatingActionButton = {
@@ -102,30 +108,41 @@ fun DaftaryApp(db: DaftaryDb) {
             ) { padding ->
                 LazyColumn(Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp), contentPadding = PaddingValues(top = 22.dp, bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     item {
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Column { Text("مرحباً بك 👋", color = Muted, fontSize = 13.sp); Text("دفتري", color = Ink, fontSize = 29.sp, fontWeight = FontWeight.Bold) }
-                            Box(Modifier.size(46.dp).background(Mint, CircleShape), contentAlignment = Alignment.Center) { Icon(Icons.Default.DirectionsCar, null, tint = Green) }
+                        Column(Modifier.fillMaxWidth().background(BrandGradient, RoundedCornerShape(28.dp)).padding(horizontal = 20.dp, vertical = 18.dp)) {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
+                                Column { Text("دفتري", color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.ExtraBold); Text("إدارة بيع السيارات بالتقسيط", color = Color.White.copy(alpha = .9f), fontSize = 12.sp) }
+                                Icon(Icons.Default.Notifications, "الإشعارات", tint = Color.White, modifier = Modifier.size(23.dp))
+                            }
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                                Column { Text("مرحباً بك", color = Color.White.copy(alpha = .82f), fontSize = 12.sp); Text("ابدأ يومك بتنظيم مبيعاتك", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold) }
+                                Icon(Icons.Default.DirectionsCar, null, tint = Color.White.copy(alpha = .96f), modifier = Modifier.size(104.dp))
+                            }
                         }
                     }
                     if (tab == 0) {
                         item {
-                            Column(Modifier.fillMaxWidth().background(BrandGradient, RoundedCornerShape(26.dp)).padding(20.dp)) {
-                                Text("إجمالي المبالغ المتبقية", color = Color(0xFFE4E9FF), fontSize = 13.sp)
-                                Spacer(Modifier.height(8.dp))
-                                Text(money(debt), color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
-                                Spacer(Modifier.height(18.dp))
-                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    MiniMetric("إجمالي المبيعات", money(total), Color.White)
-                                    MiniMetric("المبالغ المحصلة", money(received), Color(0xFFE7DFFF))
-                                }
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                MetricTile("المبيعات", sales.size.toString(), Icons.Default.DirectionsCar, Modifier.weight(1f), Color(0xFF168DFF))
+                                MetricTile("الإجمالي", compactMoney(total), Icons.Default.ReceiptLong, Modifier.weight(1f), Color(0xFF6248F5))
+                                MetricTile("المحصل", compactMoney(received), Icons.Default.AttachMoney, Modifier.weight(1f), Color(0xFF13A8C7))
+                                MetricTile("المتبقي", compactMoney(debt), Icons.Default.TrendingUp, Modifier.weight(1f), Color(0xFFB34FEA))
                             }
                         }
-                        item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            StatCard("عدد العقود", sales.size.toString(), Icons.Default.ReceiptLong, Modifier.weight(1f))
-                            StatCard("عقود قيد السداد", sales.count { it.remaining > 0 }.toString(), Icons.Default.TrendingUp, Modifier.weight(1f))
-                        } }
+                        item {
+                            Button(onClick = { showAdd = true }, modifier = Modifier.fillMaxWidth().height(54.dp), shape = RoundedCornerShape(18.dp), colors = ButtonDefaults.buttonColors(containerColor = Green)) {
+                                Icon(Icons.Default.Add, null); Spacer(Modifier.width(8.dp)); Text("بيع سيارة جديدة", fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        item {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+                                ShortcutTile("المبيعات", Icons.Default.ReceiptLong, Modifier.weight(1f)) { tab = 1 }
+                                ShortcutTile("الأقساط", Icons.Default.CalendarMonth, Modifier.weight(1f)) { tab = 2 }
+                                ShortcutTile("العملاء", Icons.Default.People, Modifier.weight(1f)) { tab = 3 }
+                                ShortcutTile("التقارير", Icons.Default.Assessment, Modifier.weight(1f)) { tab = 4 }
+                            }
+                        }
                     } else {
-                        item { Column { Text(if (tab == 1) "عقود السيارات" else "سجل التحصيل", fontSize = 23.sp, fontWeight = FontWeight.Bold, color = Ink); Text(if (tab == 1) "جميع عمليات البيع المسجلة" else "اختر عقداً لتسجيل دفعة جديدة", color = Muted, fontSize = 13.sp) } }
+                        item { Column { Text(when(tab) { 1 -> "المبيعات"; 2 -> "الأقساط والتحصيل"; 3 -> "العملاء"; 4 -> "التقارير"; else -> "الرئيسية" }, fontSize = 23.sp, fontWeight = FontWeight.Bold, color = Ink); Text(when(tab) { 1 -> "جميع عمليات البيع المسجلة"; 2 -> "اختر عقداً لتسجيل دفعة جديدة"; 3 -> "قائمة المشترين المسجلين"; 4 -> "ملخص الأداء المالي"; else -> "نظرة عامة على حساباتك" }, color = Muted, fontSize = 13.sp) } }
                     }
                     item {
                         OutlinedTextField(value = search, onValueChange = { search = it }, modifier = Modifier.fillMaxWidth(), placeholder = { Text("ابحث باسم المشتري أو السيارة…", fontSize = 13.sp) }, leadingIcon = { Icon(Icons.Default.Search, null, tint = Muted) }, singleLine = true, shape = RoundedCornerShape(16.dp), colors = OutlinedTextFieldDefaults.colors(unfocusedBorderColor = Color(0xFFE8ECE9), focusedBorderColor = Green))
@@ -139,6 +156,24 @@ fun DaftaryApp(db: DaftaryDb) {
         }
         if (showAdd) AddSaleDialog({ showAdd = false }) { name, car, price, down, count -> db.add(name, car, price, down, count); sales = db.all(); showAdd = false }
         selected?.let { sale -> PaymentDialog(sale, { selected = null }) { amount -> db.receive(sale.id, amount); sales = db.all(); selected = null } }
+    }
+}
+@Composable
+fun compactMoney(value: Double): String = when { value >= 1000000 -> String.format(Locale.US, "%.1fM", value / 1000000); value >= 1000 -> String.format(Locale.US, "%.1fK", value / 1000); else -> NumberFormat.getNumberInstance(Locale.US).format(value) }
+
+@Composable
+fun MetricTile(label: String, value: String, icon: ImageVector, modifier: Modifier = Modifier, accent: Color) {
+    Column(modifier.background(Color.White, RoundedCornerShape(17.dp)).padding(vertical = 12.dp, horizontal = 7.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(icon, null, tint = accent, modifier = Modifier.size(21.dp)); Spacer(Modifier.height(8.dp))
+        Text(value, color = Ink, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1)
+        Text(label, color = Muted, fontSize = 9.sp, maxLines = 1)
+    }
+}
+@Composable
+fun ShortcutTile(label: String, icon: ImageVector, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Column(modifier.background(Color.White, RoundedCornerShape(17.dp)).clickable { onClick() }.padding(vertical = 14.dp, horizontal = 4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(icon, null, tint = Green, modifier = Modifier.size(25.dp)); Spacer(Modifier.height(7.dp))
+        Text(label, color = Ink, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 @Composable
