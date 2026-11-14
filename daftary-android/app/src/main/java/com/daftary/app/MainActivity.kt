@@ -28,6 +28,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
@@ -38,11 +39,13 @@ import androidx.compose.ui.unit.sp
 import java.text.NumberFormat
 import java.util.Locale
 
-private val Ink = Color(0xFF172C26)
-private val Green = Color(0xFF2F6B55)
-private val Mint = Color(0xFFEAF3EE)
-private val Canvas = Color(0xFFF6F7F5)
-private val Muted = Color(0xFF7C8982)
+private val Ink = Color(0xFF172044)
+private val Green = Color(0xFF3767F5)
+private val Purple = Color(0xFF8748E8)
+private val Mint = Color(0xFFEEF0FF)
+private val Canvas = Color(0xFFF6F7FF)
+private val Muted = Color(0xFF7B829D)
+private val BrandGradient = Brush.linearGradient(listOf(Color(0xFF168DFF), Color(0xFF6248F5), Color(0xFFB34FEA)))
 
 data class Sale(val id: Long, val name: String, val car: String, val price: Double, val down: Double, val count: Int, val paid: Double) {
     val remaining: Double get() = (price - paid).coerceAtLeast(0.0)
@@ -82,7 +85,7 @@ fun DaftaryApp(db: DaftaryDb) {
     val received = sales.sumOf { it.paid }
     val debt = sales.sumOf { it.remaining }
     val visible = sales.filter { (it.name + it.car).contains(search, true) }
-    MaterialTheme(colorScheme = lightColorScheme(primary = Green, background = Canvas, surface = Color.White)) {
+    MaterialTheme(colorScheme = lightColorScheme(primary = Green, secondary = Purple, tertiary = Color(0xFFB34FEA), background = Canvas, surface = Color.White)) {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
             Scaffold(
                 containerColor = Canvas,
@@ -94,7 +97,7 @@ fun DaftaryApp(db: DaftaryDb) {
                     }
                 },
                 floatingActionButton = {
-                    FloatingActionButton(onClick = { showAdd = true }, containerColor = Ink, contentColor = Color.White, shape = CircleShape) { Icon(Icons.Default.Add, "إضافة عملية بيع") }
+                    FloatingActionButton(onClick = { showAdd = true }, containerColor = Green, contentColor = Color.White, shape = CircleShape) { Icon(Icons.Default.Add, "إضافة عملية بيع") }
                 }
             ) { padding ->
                 LazyColumn(Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp), contentPadding = PaddingValues(top = 22.dp, bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -106,14 +109,14 @@ fun DaftaryApp(db: DaftaryDb) {
                     }
                     if (tab == 0) {
                         item {
-                            Column(Modifier.fillMaxWidth().background(Ink, RoundedCornerShape(26.dp)).padding(20.dp)) {
-                                Text("إجمالي المبالغ المتبقية", color = Color(0xFFC9D9D1), fontSize = 13.sp)
+                            Column(Modifier.fillMaxWidth().background(BrandGradient, RoundedCornerShape(26.dp)).padding(20.dp)) {
+                                Text("إجمالي المبالغ المتبقية", color = Color(0xFFE4E9FF), fontSize = 13.sp)
                                 Spacer(Modifier.height(8.dp))
                                 Text(money(debt), color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
                                 Spacer(Modifier.height(18.dp))
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                     MiniMetric("إجمالي المبيعات", money(total), Color.White)
-                                    MiniMetric("المبالغ المحصلة", money(received), Color(0xFFB8D8C8))
+                                    MiniMetric("المبالغ المحصلة", money(received), Color(0xFFE7DFFF))
                                 }
                             }
                         }
@@ -153,7 +156,7 @@ fun SaleCard(sale: Sale, onClick: () -> Unit) {
             Box(Modifier.size(44.dp).background(Mint, RoundedCornerShape(14.dp)), contentAlignment = Alignment.Center) { Icon(Icons.Default.DirectionsCar, null, tint = Green) }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) { Text(sale.name, color = Ink, fontWeight = FontWeight.Bold, fontSize = 15.sp); Text(sale.car, color = Muted, fontSize = 12.sp) }
-            Text(if (sale.remaining <= 0) "مكتمل" else "قيد السداد", color = if (sale.remaining <= 0) Green else Color(0xFFB7791F), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+            Text(if (sale.remaining <= 0) "مكتمل" else "قيد السداد", color = if (sale.remaining <= 0) Green else Color(0xFF8A55D7), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
         }
         Spacer(Modifier.height(15.dp)); HorizontalDivider(color = Color(0xFFF0F2F0)); Spacer(Modifier.height(12.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
